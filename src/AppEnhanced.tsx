@@ -16,13 +16,18 @@ import './AppEnhanced.css'
 
 export type GeographicLevel = 'census-tract' | 'zip-code' | 'county' | 'city' | 'state'
 
-const STATE_ABBREVIATIONS = [
-  'All States', 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI',
-  'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND',
-  'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA',
-  'WA', 'WV', 'WI', 'WY'
-]
+const STATE_DATA: Record<string, string> = {
+  AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas', CA: 'California',
+  CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware', FL: 'Florida', GA: 'Georgia',
+  HI: 'Hawaii', ID: 'Idaho', IL: 'Illinois', IN: 'Indiana', IA: 'Iowa',
+  KS: 'Kansas', KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland',
+  MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi', MO: 'Missouri',
+  MT: 'Montana', NE: 'Nebraska', NV: 'Nevada', NH: 'New Hampshire', NJ: 'New Jersey',
+  NM: 'New Mexico', NY: 'New York', NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio',
+  OK: 'Oklahoma', OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
+  SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah', VT: 'Vermont',
+  VA: 'Virginia', WA: 'Washington', WV: 'West Virginia', WI: 'Wisconsin', WY: 'Wyoming'
+}
 
 const NATIONAL_OPTION: LocationOption = {
   id: 'all-states',
@@ -34,7 +39,6 @@ function AppEnhanced() {
   const [geoLevel, setGeoLevel] = useState<GeographicLevel>('county')
   const [selectedState, setSelectedState] = useState<string | undefined>(undefined)
   const [currentDate, setCurrentDate] = useState(new Date(2030, 0, 1))
-  const [isMobile, setIsMobile] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [committedSearch, setCommittedSearch] = useState('')
   const [locationOptions, setLocationOptions] = useState<LocationOption[]>([])
@@ -100,32 +104,53 @@ function AppEnhanced() {
     value.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim()
 
   const fuzzyScore = (query: string, candidate: string) => {
-    const normalizedQuery = normalizeText(query)
-    const normalizedCandidate = normalizeText(candidate)
-    if (!normalizedQuery || !normalizedCandidate) return 0
-    if (normalizedCandidate.includes(normalizedQuery)) {
-      return 0.9 + Math.min(0.1, normalizedQuery.length / normalizedCandidate.length)
+    const q = normalizeText(query)
+    const c = normalizeText(candidate)
+    if (!q || !c) return 0
+
+    // Exact match or starts-with gets highest priority
+    if (c === q) return 1.0
+    if (c.startsWith(q)) return 0.95
+
+    // Substring match — boost by how early it appears
+    const idx = c.indexOf(q)
+    if (idx >= 0) {
+      const positionBonus = 1 - (idx / c.length) * 0.1
+      return 0.85 * positionBonus + Math.min(0.1, q.length / c.length)
     }
+
+    // Word-start matching: "new y" matches "new york"
+    const queryWords = q.split(/\s+/)
+    const candidateWords = c.split(/\s+/)
+    let wordMatches = 0
+    for (const qw of queryWords) {
+      if (candidateWords.some(cw => cw.startsWith(qw))) {
+        wordMatches++
+      }
+    }
+    if (wordMatches > 0) {
+      return 0.6 + (wordMatches / queryWords.length) * 0.25
+    }
+
+    // Subsequence fuzzy matching
     let score = 0
     let queryIndex = 0
-    for (let i = 0; i < normalizedCandidate.length && queryIndex < normalizedQuery.length; i += 1) {
-      if (normalizedCandidate[i] === normalizedQuery[queryIndex]) {
+    for (let i = 0; i < c.length && queryIndex < q.length; i += 1) {
+      if (c[i] === q[queryIndex]) {
         score += 1
         queryIndex += 1
       }
     }
-    return score / normalizedCandidate.length
+    return (score / q.length) * 0.5
   }
 
   const stateOptions: LocationOption[] = useMemo(() => (
-    STATE_ABBREVIATIONS
-      .filter(state => state !== 'All States')
-      .map(state => ({
-        id: `state-${state}`,
-        label: `${state} (State)`,
-        type: 'state',
-        state
-      }))
+    Object.entries(STATE_DATA).map(([abbr, fullName]) => ({
+      id: `state-${abbr}`,
+      label: `${fullName} (${abbr})`,
+      type: 'state' as const,
+      state: abbr
+    }))
   ), [])
 
   const combinedOptions = useMemo(() => [NATIONAL_OPTION, ...stateOptions, ...locationOptions], [
@@ -140,9 +165,9 @@ function AppEnhanced() {
         option,
         score: fuzzyScore(searchQuery, option.label)
       }))
-      .filter(({ score }) => score > 0.15)
+      .filter(({ score }) => score > 0.2)
       .sort((a, b) => b.score - a.score)
-      .slice(0, 6)
+      .slice(0, 8)
       .map(({ option }) => option)
   }, [combinedOptions, searchQuery])
 
@@ -212,13 +237,6 @@ function AppEnhanced() {
     return () => window.removeEventListener('popstate', handlePopState)
   }, [])
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 768px)')
-    const handleChange = () => setIsMobile(mediaQuery.matches)
-    handleChange()
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
 
   return (
     <div className="app">
@@ -253,31 +271,17 @@ function AppEnhanced() {
         </div>
 
         <div className="ts-navbar-right">
-          {!isMobile && (
-            <div className="ts-geo-select">
-              <select
-                value={geoLevel}
-                onChange={(e) => setGeoLevel(e.target.value as GeographicLevel)}
-                className="ts-select"
-              >
-                <option value="state">State</option>
-                <option value="county">County</option>
-                <option value="city">City</option>
-                <option value="zip-code">ZIP Code</option>
-                <option value="census-tract">Census Tract</option>
-              </select>
-            </div>
-          )}
           <div className="ts-search-wrapper">
             <Search size={14} className="ts-search-icon" />
             <input
               className="ts-search-input"
               type="text"
-              placeholder="Search location..."
+              placeholder="Search state, county, or region..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleSearchSubmit()
+                if (e.key === 'Escape') setSearchQuery('')
               }}
             />
             <button className="ts-gps-btn" onClick={handleGpsLookup} type="button" aria-label="Use GPS location">
