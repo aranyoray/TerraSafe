@@ -1,4 +1,5 @@
 /**
+ * TerraSafe — Climate Resilience Platform
  * Real Map View Component with Actual Data
  * Uses real nighttime light data, county GeoJSON polygons, and FEMA disasters
  */
@@ -214,7 +215,7 @@ const RealMapView = ({
   const getBorderColor = () => {
     switch (geoLevel) {
       case 'state':
-        return '#0f172a'
+        return '#334155'
       case 'city':
         return '#f97316'
       case 'zip-code':
@@ -223,7 +224,7 @@ const RealMapView = ({
         return '#7c3aed'
       case 'county':
       default:
-        return '#ffffff'
+        return '#1e293b'
     }
   }
 
@@ -302,11 +303,11 @@ const RealMapView = ({
         <h3>{props.name} County, {stateFips}</h3>
         <p><strong>Population:</strong> {props.totalPopulation.toLocaleString()}</p>
         <div className="metric-section">
-          <h4>AI Driven Forecast for {currentDate.getFullYear()}</h4>
+          <h4>Predictive Risk Assessment for {currentDate.getFullYear()}</h4>
           <p><strong>Risk Level:</strong> {forecastLevel.toLowerCase()} ({forecastScore.toFixed(1)})</p>
         </div>
         <div className="metric-section">
-          <h4>County-Level Pricing Guidance</h4>
+          <h4>Demand-Response Strategy</h4>
           <p>
             {forecastScore >= 75
               ? 'Surge +20%: target large industrial loads and automated demand response.'
@@ -318,7 +319,7 @@ const RealMapView = ({
           </p>
         </div>
         <div className="metric-section">
-          <h4>{currentDate.getFullYear()} Readiness Investments</h4>
+          <h4>{currentDate.getFullYear()} Resilience Investments</h4>
           <p>
             {forecastScore >= 70
               ? '⚡ New energy project recommended to strengthen local capacity.'
@@ -331,8 +332,8 @@ const RealMapView = ({
           </p>
         </div>
         <div className="metric-section">
-          <h4>Emergency Readiness</h4>
-          <p><strong>Stress Level:</strong> {metrics.stressLevel} ({metrics.overallStressScore.toFixed(1)})</p>
+          <h4>Grid Vulnerability Assessment</h4>
+          <p><strong>Risk Level:</strong> {metrics.stressLevel} ({metrics.overallStressScore.toFixed(1)})</p>
           <p><strong>Public Alerts sent:</strong> 0</p>
         </div>
       </div>
@@ -486,7 +487,7 @@ const RealMapView = ({
     <div className="enhanced-map-view">
       {loading && (
         <div className="loading-overlay">
-          <div className="loading-spinner">Loading verified public data from NOAA, FEMA, and satellite sources...</div>
+          <div className="loading-spinner">Initializing TerraSafe grid analysis...</div>
         </div>
       )}
 
@@ -504,8 +505,8 @@ const RealMapView = ({
       >
         <MapBehavior />
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
 
         {/* Render county polygons */}
@@ -573,9 +574,9 @@ const RealMapView = ({
             >
               <Popup>
                 <div className="stress-popup">
-                  <h3>⚠️ High Stress Area</h3>
+                  <h3>⚠️ High-Risk Zone</h3>
                   <p><strong>{county.properties.name} County, {county.properties.state}</strong></p>
-                  <p>Stress Level: {county.emergencyMetrics.stressLevel}</p>
+                  <p>Risk Level: {county.emergencyMetrics.stressLevel}</p>
                   <p>Score: {county.emergencyMetrics.overallStressScore.toFixed(1)}/100</p>
                   <p>Disasters: {county.emergencyMetrics.disasterCount}</p>
                 </div>
@@ -941,7 +942,7 @@ const RealMapView = ({
               <span className="summary-value">{getForecastScore(selectedCounty).toFixed(1)}</span>
             </div>
             <div className="summary-item">
-              <span className="summary-label">Stress level</span>
+              <span className="summary-label">Risk level</span>
               <span className="summary-value">{selectedCounty.emergencyMetrics.stressLevel}</span>
             </div>
             <div className="summary-item">
@@ -950,13 +951,13 @@ const RealMapView = ({
             </div>
           </div>
           <div className="map-sidebar-section">
-            <h4>Emergency predictions</h4>
+            <h4>Grid vulnerability</h4>
             <p><strong>Forecast Score:</strong> {getForecastScore(selectedCounty).toFixed(1)}/100</p>
             <p><strong>Forecast Level:</strong> {getForecastLevel(getForecastScore(selectedCounty))}</p>
             <p><strong>Forecast Window:</strong> {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
           </div>
           <div className="map-sidebar-section">
-            <h4>Energy predictions</h4>
+            <h4>Demand-response strategy</h4>
             <p>
               {getForecastScore(selectedCounty) >= 75
                 ? 'Surge +20%: target large industrial loads and automated demand response.'
@@ -968,7 +969,7 @@ const RealMapView = ({
             </p>
           </div>
           <div className="map-sidebar-section">
-            <h4>2035 Readiness Investments</h4>
+            <h4>Resilience Infrastructure</h4>
             <p>
               {getForecastScore(selectedCounty) >= 70
                 ? '💡 New energy project recommended to strengthen local capacity.'
@@ -981,8 +982,8 @@ const RealMapView = ({
             </p>
           </div>
           <div className="map-sidebar-section">
-            <h4>Emergency Readiness</h4>
-            <p><strong>Stress Level:</strong> {selectedCounty.emergencyMetrics.stressLevel}</p>
+            <h4>Grid Vulnerability Assessment</h4>
+            <p><strong>Risk Level:</strong> {selectedCounty.emergencyMetrics.stressLevel}</p>
             <p><strong>Overall Score:</strong> {selectedCounty.emergencyMetrics.overallStressScore.toFixed(1)}/100</p>
             <p><strong>Disaster Declarations:</strong> {selectedCounty.emergencyMetrics.disasterCount}</p>
           </div>

@@ -1,9 +1,9 @@
 """
-EnerGency Model Suite (placeholder training pipeline)
+TerraSafe Model Suite — Grid Resilience Forecasting Pipeline
 
-Model 1: Transparent regression for energy deficit.
-Model 2: Reinforcement learning with county slope feedback.
-Model 3: PPO-style policy optimization with gradient boosting baseline.
+Model 1: Linear regression baseline for energy deficit prediction.
+Model 2: Terrain-augmented regression with county slope feedback.
+Model 3: Gradient boosting ensemble with spatiotemporal features.
 """
 
 from __future__ import annotations

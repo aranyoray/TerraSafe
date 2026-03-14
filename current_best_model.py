@@ -1,5 +1,5 @@
-# Energy deficit prediction models
-# Author: Ekaansh Ravuri
+# TerraSafe — Grid Resilience Forecasting Models
+# Energy deficit prediction and outage probability modeling
 
 import numpy as np
 import pandas as pd

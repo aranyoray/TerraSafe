@@ -1,8 +1,8 @@
 {
-  "name": "energency",
-  "version": "1.0.0",
-  "description": "U.S. Energy Access Index - Mapping energy access across communities",
-  "author": "Ekaansh Ravuri",
+  "name": "terrasafe",
+  "version": "2.0.0",
+  "description": "TerraSafe — AI-powered climate resilience platform for extreme weather energy preparedness",
+  "author": "TerraSafe Team",
   "type": "module",
   "scripts": {
     "dev": "vite",

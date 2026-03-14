@@ -1,6 +1,6 @@
-# Energy Access Index - Dataset Sources
+# TerraSafe — Dataset Sources
 
-This document outlines the DOE datasets integrated into the Energy Access Index application.
+This document outlines the datasets integrated into the TerraSafe climate resilience platform.
 
 ## Primary Data Sources
 

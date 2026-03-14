@@ -1,6 +1,6 @@
 /**
- * EnerGency - Enhanced Emergency Preparedness Dashboard
- * Interactive map with disaster preparedness metrics and energy management insights
+ * TerraSafe — Extreme Weather Energy Preparedness Platform
+ * AI-powered climate resilience dashboard for community grid protection
  */
 
 import { useEffect, useMemo, useState } from 'react'
@@ -10,6 +10,7 @@ import { MapLayerConfig } from './types/emergencyMetrics'
 import TimeSlider from './components/TimeSlider'
 import AIModelsReport from './components/AIModelsReport'
 import { LocationOption } from './types/locationSearch'
+import { ChevronLeft, ChevronRight, Search, MapPin, Layers, BarChart3, Shield, Zap, AlertTriangle, Info, HelpCircle, Target, Building2, Menu, X } from 'lucide-react'
 import './App.css'
 import './AppEnhanced.css'
 
@@ -40,28 +41,30 @@ function AppEnhanced() {
   const [gpsStatus, setGpsStatus] = useState<string | null>(null)
   const [gpsCoordinates, setGpsCoordinates] = useState<[number, number] | null>(null)
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [activeInfoSection, setActiveInfoSection] = useState<string | null>(null)
   const [layers, setLayers] = useState<MapLayerConfig[]>([
     {
       id: 'county-choropleth',
-      name: 'County Readiness Pressure',
+      name: 'Grid Vulnerability Index',
       enabled: false,
       type: 'choropleth',
       dataKey: 'overallStressScore',
-      color: '#b91c1c',
+      color: '#ef4444',
       category: 'emergency'
     },
     {
       id: 'forecast-pressure',
-      name: 'AI Forecast (2020-2050 Outlook)',
+      name: 'Predictive Outage Risk (2025–2050)',
       enabled: true,
       type: 'choropleth',
       dataKey: 'overallStressScore',
-      color: '#1d4ed8',
+      color: '#06b6d4',
       category: 'emergency'
     },
     {
       id: 'disaster-stress',
-      name: 'Disaster Exposure Level',
+      name: 'Historical Disaster Exposure',
       enabled: false,
       type: 'choropleth',
       dataKey: 'disasterStressScore',
@@ -70,17 +73,17 @@ function AppEnhanced() {
     },
     {
       id: 'energy-reliability',
-      name: 'Energy Reliability Watchlist',
+      name: 'Grid Stress Watchlist',
       enabled: false,
       type: 'symbols',
       dataKey: 'energyStressScore',
-      color: '#2563eb',
+      color: '#3b82f6',
       icon: '⚡',
       category: 'energy'
     },
     {
       id: 'recovery-needs',
-      name: 'Disaster Recovery Needs',
+      name: 'Post-Disaster Recovery Zones',
       enabled: false,
       type: 'symbols',
       dataKey: 'disasterStressScore',
@@ -90,77 +93,77 @@ function AppEnhanced() {
     },
     {
       id: 'infrastructure-priority',
-      name: 'Critical Infrastructure Safeguards',
+      name: 'Critical Facility Protection',
       enabled: false,
       type: 'symbols',
       dataKey: 'overallStressScore',
-      color: '#7c3aed',
+      color: '#8b5cf6',
       icon: '🏥',
       category: 'emergency'
     },
     {
       id: 'county-pricing',
-      name: 'County-Level Pricing Signals',
+      name: 'Demand-Response Pricing Zones',
       enabled: false,
       type: 'symbols',
       dataKey: 'overallStressScore',
-      color: '#0f766e',
+      color: '#14b8a6',
       icon: '💵',
       category: 'energy'
     },
     {
       id: 'manufacturing-hubs',
-      name: 'Manufacturing & Data Center Hubs',
+      name: 'Industrial Load Centers',
       enabled: false,
       type: 'symbols',
       dataKey: 'energyStressScore',
-      color: '#0f172a',
+      color: '#64748b',
       icon: '🏭',
       category: 'energy'
     },
     {
       id: 'agriculture-supply',
-      name: 'Agriculture & Food Supply Chains',
+      name: 'Agricultural Supply Chain Risk',
       enabled: false,
       type: 'symbols',
       dataKey: 'disasterStressScore',
-      color: '#16a34a',
+      color: '#22c55e',
       icon: '🌾',
       category: 'emergency'
     },
     {
       id: 'water-systems',
-      name: 'Water System Reliability Risks',
+      name: 'Water Infrastructure Risk',
       enabled: false,
       type: 'symbols',
       dataKey: 'disasterStressScore',
-      color: '#0284c7',
+      color: '#0ea5e9',
       icon: '💧',
       category: 'emergency'
     },
     {
       id: 'first-responders',
-      name: 'First Responder & Hospital Hubs',
+      name: 'Emergency Services Hubs',
       enabled: false,
       type: 'symbols',
       dataKey: 'overallStressScore',
-      color: '#7c3aed',
+      color: '#8b5cf6',
       icon: '🚓',
       category: 'emergency'
     },
     {
       id: 'new-projects',
-      name: '2050 New Energy Projects 💡',
+      name: 'Resilience Infrastructure Pipeline',
       enabled: false,
       type: 'symbols',
       dataKey: 'overallStressScore',
-      color: '#facc15',
+      color: '#eab308',
       icon: '💡',
       category: 'energy'
     },
     {
       id: 'storage-sites',
-      name: '2050 Storage Sites 🔋',
+      name: 'Battery Storage Candidates',
       enabled: false,
       type: 'symbols',
       dataKey: 'overallStressScore',
@@ -170,7 +173,7 @@ function AppEnhanced() {
     },
     {
       id: 'nightlight-points',
-      name: 'Local Energy Activity',
+      name: 'Satellite Energy Activity',
       enabled: false,
       type: 'symbols',
       dataKey: 'isTopStressed',
@@ -179,11 +182,11 @@ function AppEnhanced() {
     },
     {
       id: 'top-stressed',
-      name: 'Priority Action Counties (⚠️)',
+      name: 'Priority Action Counties',
       enabled: true,
       type: 'symbols',
       dataKey: 'isTopStressed',
-      color: '#b91c1c',
+      color: '#ef4444',
       icon: '⚠️',
       category: 'emergency'
     }
@@ -278,20 +281,20 @@ function AppEnhanced() {
 
   const handleGpsLookup = () => {
     if (!navigator.geolocation) {
-      setGpsStatus('GPS is not available in this browser.')
+      setGpsStatus('Geolocation not available in this browser.')
       return
     }
-    setGpsStatus('Requesting location permission...')
+    setGpsStatus('Acquiring location...')
     navigator.geolocation.getCurrentPosition(
       position => {
         setGpsCoordinates([position.coords.latitude, position.coords.longitude])
-        setGpsStatus('Location detected. Centering the map now.')
+        setGpsStatus('Location acquired. Centering map.')
       },
       error => {
         if (error.code === error.PERMISSION_DENIED) {
-          setGpsStatus('Location permission denied. You can still search by name.')
+          setGpsStatus('Location access denied. Search by name instead.')
         } else {
-          setGpsStatus('Unable to detect location. Try again or search by name.')
+          setGpsStatus('Location unavailable. Try searching by name.')
         }
       }
     )
@@ -307,17 +310,17 @@ function AppEnhanced() {
 
   const getLegendColor = (value: number, layerId?: string) => {
     if (layerId === 'forecast-pressure') {
-      if (value >= 80) return '#1e3a8a'
-      if (value >= 60) return '#1d4ed8'
-      if (value >= 40) return '#38bdf8'
-      if (value >= 20) return '#bae6fd'
-      return '#e0f2fe'
+      if (value >= 80) return '#0e7490'
+      if (value >= 60) return '#06b6d4'
+      if (value >= 40) return '#22d3ee'
+      if (value >= 20) return '#67e8f9'
+      return '#a5f3fc'
     }
     if (value >= 80) return '#991b1b'
     if (value >= 60) return '#dc2626'
     if (value >= 40) return '#f97316'
-    if (value >= 20) return '#93c5fd'
-    return '#1d4ed8'
+    if (value >= 20) return '#38bdf8'
+    return '#06b6d4'
   }
 
   useEffect(() => {
@@ -334,65 +337,38 @@ function AppEnhanced() {
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [])
 
+  const toggleInfoSection = (id: string) => {
+    setActiveInfoSection(prev => prev === id ? null : id)
+  }
+
   return (
     <div className="app">
       {currentPath === '/AI-models' ? (
         <AIModelsReport />
       ) : (
         <>
-      <header className="app-header-enhanced">
-        <div className="header-top">
-          <div className="header-content">
-            <h1>🇺🇸 EnerGency</h1>
-            <p className="header-subtitle">
-              Energy reliability, local control, and community readiness intelligence
-            </p>
-            <div className="header-actions">
-              <a className="header-link" href="/AI-models">AI Models Report</a>
-            </div>
-          </div>
-          {!isMobile && (
-            <div className="header-timeline header-timeline-inline">
-              <div className="header-timeline-label">Timeline to 2035</div>
-              <TimeSlider
-                minDate={new Date(2020, 0, 1)}
-                maxDate={new Date(2035, 11, 31)}
-                currentDate={currentDate}
-                onDateChange={setCurrentDate}
-                stepSize="month"
-                className="time-slider--inline"
-              />
-            </div>
-          )}
-          {activeChoroplethLayer && (
-            <div className="header-legend">
-              <div className="legend-title">{activeChoroplethLayer.name}</div>
-              <div className="legend-gradient">
-                <div className="legend-gradient-bar" style={{
-                  background: `linear-gradient(to right, ${getLegendColor(0, activeChoroplethLayer.id)}, ${getLegendColor(50, activeChoroplethLayer.id)}, ${getLegendColor(100, activeChoroplethLayer.id)})`
-                }} />
-                <div className="legend-gradient-labels">
-                  <span>Low</span>
-                  <span>Medium</span>
-                  <span>High</span>
-                </div>
-              </div>
-              <div className="legend-metadata">
-                <strong>Forecast Date:</strong> {currentDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </div>
-              <div className="legend-metadata">
-                <strong>Data Sources:</strong> FEMA, NOAA, EIA, Census, VIIRS
-              </div>
-            </div>
-          )}
+      {/* Floating Navigation Bar */}
+      <nav className="ts-navbar">
+        <div className="ts-navbar-brand">
+          <Shield size={20} className="ts-logo-icon" />
+          <span className="ts-logo-text">Terra<span className="ts-logo-accent">Safe</span></span>
         </div>
-        <div className="header-controls">
-          <div className="control-group">
-            <label>Geographic Level:</label>
+        <div className="ts-navbar-center">
+          <a className="ts-nav-item ts-nav-active" href="/">
+            <Layers size={14} />
+            <span>Dashboard</span>
+          </a>
+          <a className="ts-nav-item" href="/AI-models">
+            <BarChart3 size={14} />
+            <span>Models</span>
+          </a>
+        </div>
+        <div className="ts-navbar-right">
+          <div className="ts-geo-select">
             <select
               value={geoLevel}
               onChange={(e) => setGeoLevel(e.target.value as GeographicLevel)}
-              className="select-control"
+              className="ts-select"
             >
               <option value="state">State</option>
               <option value="county">County</option>
@@ -401,204 +377,252 @@ function AppEnhanced() {
               <option value="census-tract">Census Tract</option>
             </select>
           </div>
-          <div className="control-group search-group">
-            <label>Location Search:</label>
-            <div className="search-input-group">
-              <input
-                className="search-input"
-                type="text"
-                placeholder="Search state or county"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearchSubmit()
-                  }
-                }}
-              />
-              <button className="search-button" onClick={handleSearchSubmit} type="button">
-                Go
-              </button>
-              <button className="gps-button" onClick={handleGpsLookup} type="button" aria-label="Use GPS location">
-                📍
-              </button>
-            </div>
+          <div className="ts-search-wrapper">
+            <Search size={14} className="ts-search-icon" />
+            <input
+              className="ts-search-input"
+              type="text"
+              placeholder="Search location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleSearchSubmit()
+              }}
+            />
+            <button className="ts-gps-btn" onClick={handleGpsLookup} type="button" aria-label="Use GPS location">
+              <MapPin size={14} />
+            </button>
             {searchSuggestions.length > 0 && (
-              <ul className="search-suggestions">
+              <ul className="ts-search-suggestions">
                 {searchSuggestions.map(option => (
                   <li key={option.id}>
                     <button type="button" onClick={() => handleSearchSelect(option)}>
-                      <span className="suggestion-title">{option.label}</span>
-                      <span className="suggestion-tag">{option.type}</span>
+                      <span className="ts-suggestion-label">{option.label}</span>
+                      <span className="ts-suggestion-type">{option.type}</span>
                     </button>
                   </li>
                 ))}
               </ul>
             )}
-            {gpsStatus && (
-              <div className="gps-status">{gpsStatus}</div>
-            )}
           </div>
+          {gpsStatus && <div className="ts-gps-status">{gpsStatus}</div>}
         </div>
-      </header>
+      </nav>
 
-      <div className="app-content-enhanced">
-        <div className="info-panel">
-          <div className="info-card">
-            <LayerControls
-              layers={layers}
-              onLayerToggle={handleLayerToggle}
-            />
-          </div>
+      {/* Main Content */}
+      <div className="ts-main">
+        {/* Sidebar Toggle */}
+        <button
+          className="ts-sidebar-toggle"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label={sidebarOpen ? 'Close panel' : 'Open panel'}
+        >
+          {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+        </button>
 
-          <div className="info-card">
-            <h3>
-              🤖 AI Forecast Studio
-              <span className="info-icon" title="Model design and governance summary.">i</span>
-            </h3>
-            <p>
-              The forecasting stack blends weather risk, grid stress, and community resilience signals
-              to prioritize preparedness actions. Each model is validated on holdout data and scored
-              for stability across rural, suburban, and metro counties.
-            </p>
-            <ul className="metrics-list">
-              <li><strong>Models used:</strong> Regression baseline, reinforcement learning, gradient boosting</li>
-              <li><strong>Signals:</strong> Disaster exposure, demand load, migration balance, terrain slope</li>
-              <li><strong>Outputs:</strong> Readiness pressure, investment timing, storage need score</li>
-            </ul>
-          </div>
-
-          <div className="info-card">
-            <h3>
-              🧠 2050 Forecast & Recommendations
-              <span className="info-icon" title="AI-assisted guidance for long-term investments.">i</span>
-            </h3>
-            <p>
-              The forecast highlights counties that should prepare for new energy projects 💡
-              and disaster-ready storage 🔋. Recommendations prioritize reliable power,
-              resilient supply chains, and protection for seniors, veterans, and critical services.
-            </p>
-          </div>
-
-          <div className="info-card">
-            <h3>
-              📚 Datasets & Sources
-              <span className="info-icon" title="Public, transparent datasets used for AI training.">i</span>
-            </h3>
-            <ul className="sources-list">
-              <li>NOAA Storm Events Database</li>
-              <li>FEMA Disaster Declarations</li>
-              <li>U.S. Energy Information Administration (EIA)</li>
-              <li>U.S. Census Bureau Migration Data</li>
-              <li>DOE LEAD Tool + VIIRS Nighttime Lights</li>
-            </ul>
-          </div>
-
-          <div className="info-card">
-            <h3>
-              📊 About This Dashboard
-              <span className="info-icon" title="Designed for clear, common-sense planning.">i</span>
-            </h3>
-            <p>
-              EnerGency delivers clear, accountable readiness insights for communities across
-              America. Measure disaster exposure, infrastructure strength, and energy
-              independence to support local decision-making, fiscal discipline, and
-              responsible stewardship.
-            </p>
-          </div>
-
-          <div className="info-card">
-            <h3>
-              📈 Available Metrics
-              <span className="info-icon" title="Hover over counties for detailed metrics.">i</span>
-            </h3>
-            <ul className="metrics-list">
-              <li><strong>Natural Disasters:</strong> Storm events, FEMA declarations, damage estimates</li>
-              <li><strong>Energy Independence:</strong> Local capacity, reliability, and demand load</li>
-              <li><strong>Household Burden:</strong> Share of income spent on power</li>
-              <li><strong>Community Stability:</strong> Migration trends and local retention</li>
-              <li><strong>Critical Infrastructure:</strong> Exposure for schools, hospitals, and services</li>
-            </ul>
-          </div>
-
-          <div className="info-card">
-            <h3>
-              🧭 Problem Statement
-              <span className="info-icon" title="Why the tool matters for emergency readiness.">i</span>
-            </h3>
-            <p>
-              Extreme weather and rapid population shifts create localized demand spikes that
-              overwhelm a grid built for more predictable patterns. Without early forecasting,
-              communities face blackouts, delayed response, and costly recoveries.
-            </p>
-          </div>
-
-          <div className="info-card stress-levels">
-            <h3>⚡ Readiness Levels</h3>
-            <div className="stress-level" style={{ borderLeft: '4px solid #1d4ed8' }}>
-              <strong>Low:</strong> Strong readiness and stable conditions
+        {/* Side Panel */}
+        {sidebarOpen && (
+          <aside className="ts-sidebar">
+            <div className="ts-sidebar-header">
+              <h2>Control Panel</h2>
             </div>
-            <div className="stress-level" style={{ borderLeft: '4px solid #0ea5e9' }}>
-              <strong>Moderate:</strong> Watch list, proactive planning advised
-            </div>
-            <div className="stress-level" style={{ borderLeft: '4px solid #f97316' }}>
-              <strong>High:</strong> Elevated risk, readiness actions needed
-            </div>
-            <div className="stress-level" style={{ borderLeft: '4px solid #b91c1c' }}>
-              <strong>Critical:</strong> Severe conditions, immediate action required
-            </div>
-          </div>
 
-          <div className="info-card">
-            <h3>
-              🎯 How to Use
-              <span className="info-icon" title="Clear steps for first-time users.">i</span>
-            </h3>
-            <ul className="usage-list">
-              <li>Toggle layers using the <strong>Map Layers</strong> panel</li>
-              <li>Hover over areas to see detailed metrics</li>
-              <li>Use the <strong>timeline</strong> to view 2035 projections</li>
-              <li>⚠️ symbols mark priority action areas</li>
-              <li>Color intensity shows readiness severity</li>
-            </ul>
-          </div>
-
-          <div className="info-card">
-            <h3>
-              🏛️ Community Priorities
-              <span className="info-icon" title="Focus on families, farms, and local jobs.">i</span>
-            </h3>
-            <ul className="sources-list">
-              <li>Support first responders, veterans, and critical services</li>
-              <li>Protect families, farms, and small businesses</li>
-              <li>Promote energy reliability with fair household costs</li>
-              <li>Strengthen local control and public accountability</li>
-            </ul>
-          </div>
-
-          <div className="info-card faq-card">
-            <h3>
-              ❓ FAQ
-              <span className="info-icon" title="Quick answers for first-time visitors.">i</span>
-            </h3>
-            <dl className="faq-list">
-              <div>
-                <dt>How is the AI forecast built?</dt>
-                <dd>We combine disaster history, grid stress, and migration trends to model readiness pressure.</dd>
+            <div className="ts-sidebar-content">
+              {/* Layer Controls */}
+              <div className="ts-panel-card">
+                <LayerControls
+                  layers={layers}
+                  onLayerToggle={handleLayerToggle}
+                />
               </div>
-              <div>
-                <dt>Is this a real-time tool?</dt>
-                <dd>It is a planning dashboard for preparedness, updated with public datasets.</dd>
-              </div>
-              <div>
-                <dt>What should I click first?</dt>
-                <dd>Start with the timeline and 2050 overlays for a quick future view.</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
 
-        <div className="map-container">
+              {/* Legend */}
+              {activeChoroplethLayer && (
+                <div className="ts-panel-card ts-legend-card">
+                  <div className="ts-legend-title">{activeChoroplethLayer.name}</div>
+                  <div className="ts-legend-gradient">
+                    <div className="ts-legend-bar" style={{
+                      background: `linear-gradient(to right, ${getLegendColor(0, activeChoroplethLayer.id)}, ${getLegendColor(50, activeChoroplethLayer.id)}, ${getLegendColor(100, activeChoroplethLayer.id)})`
+                    }} />
+                    <div className="ts-legend-labels">
+                      <span>Low Risk</span>
+                      <span>Moderate</span>
+                      <span>Critical</span>
+                    </div>
+                  </div>
+                  <div className="ts-legend-meta">
+                    Forecast: {currentDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </div>
+                  <div className="ts-legend-meta">
+                    Sources: FEMA, NOAA, EIA, Census, VIIRS
+                  </div>
+                </div>
+              )}
+
+              {/* Collapsible Info Sections */}
+              <div className="ts-panel-card ts-info-section">
+                <button className="ts-info-toggle" onClick={() => toggleInfoSection('forecast')}>
+                  <span><Target size={14} /> Predictive Modeling</span>
+                  <span className="ts-chevron">{activeInfoSection === 'forecast' ? '−' : '+'}</span>
+                </button>
+                {activeInfoSection === 'forecast' && (
+                  <div className="ts-info-body">
+                    <p>
+                      TerraSafe's forecasting engine combines climate projections, historical grid data,
+                      population migration patterns, and critical facility mapping to predict county-level
+                      outage probability under extreme weather scenarios.
+                    </p>
+                    <ul>
+                      <li><strong>Models:</strong> Gradient boosting, spatial clustering, regression ensemble</li>
+                      <li><strong>Signals:</strong> Disaster exposure, demand load, migration, terrain</li>
+                      <li><strong>Output:</strong> Outage probability, intervention priority, storage needs</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="ts-panel-card ts-info-section">
+                <button className="ts-info-toggle" onClick={() => toggleInfoSection('resilience')}>
+                  <span><Shield size={14} /> Resilience Toolkit</span>
+                  <span className="ts-chevron">{activeInfoSection === 'resilience' ? '−' : '+'}</span>
+                </button>
+                {activeInfoSection === 'resilience' && (
+                  <div className="ts-info-body">
+                    <p>
+                      The platform identifies where the grid will fail before failures happen,
+                      generating county-level action plans for grid reinforcement, backup power
+                      pre-positioning, and microgrid isolation.
+                    </p>
+                    <p>
+                      Recommendations prioritize hospitals, shelters, tribal clinics, VA facilities,
+                      and cooling centers serving the most vulnerable populations.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="ts-panel-card ts-info-section">
+                <button className="ts-info-toggle" onClick={() => toggleInfoSection('data')}>
+                  <span><BarChart3 size={14} /> Data Sources</span>
+                  <span className="ts-chevron">{activeInfoSection === 'data' ? '−' : '+'}</span>
+                </button>
+                {activeInfoSection === 'data' && (
+                  <div className="ts-info-body">
+                    <ul className="ts-source-list">
+                      <li>NOAA Storm Events Database</li>
+                      <li>FEMA Disaster Declarations (OpenFEMA API v2)</li>
+                      <li>U.S. Energy Information Administration (EIA)</li>
+                      <li>U.S. Census Bureau Migration Data</li>
+                      <li>DOE LEAD Tool</li>
+                      <li>VIIRS Nighttime Satellite Imagery</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="ts-panel-card ts-info-section">
+                <button className="ts-info-toggle" onClick={() => toggleInfoSection('about')}>
+                  <span><Info size={14} /> About TerraSafe</span>
+                  <span className="ts-chevron">{activeInfoSection === 'about' ? '−' : '+'}</span>
+                </button>
+                {activeInfoSection === 'about' && (
+                  <div className="ts-info-body">
+                    <p>
+                      TerraSafe is an AI-powered resilience dashboard that helps communities maintain
+                      energy reliability before, during, and after climate-driven extreme weather events.
+                      It translates complex grid and climate data into concrete, localized preparedness
+                      decisions.
+                    </p>
+                    <div className="ts-risk-levels">
+                      <div className="ts-risk-level" data-level="low">
+                        <span className="ts-risk-dot" style={{ background: '#06b6d4' }} />
+                        <span><strong>Low</strong> — Stable grid, standard monitoring</span>
+                      </div>
+                      <div className="ts-risk-level" data-level="moderate">
+                        <span className="ts-risk-dot" style={{ background: '#f59e0b' }} />
+                        <span><strong>Moderate</strong> — Proactive planning advised</span>
+                      </div>
+                      <div className="ts-risk-level" data-level="high">
+                        <span className="ts-risk-dot" style={{ background: '#f97316' }} />
+                        <span><strong>High</strong> — Reinforce feeders, pre-position backup power</span>
+                      </div>
+                      <div className="ts-risk-level" data-level="critical">
+                        <span className="ts-risk-dot" style={{ background: '#ef4444' }} />
+                        <span><strong>Critical</strong> — Immediate intervention required</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="ts-panel-card ts-info-section">
+                <button className="ts-info-toggle" onClick={() => toggleInfoSection('problem')}>
+                  <span><AlertTriangle size={14} /> Problem Statement</span>
+                  <span className="ts-chevron">{activeInfoSection === 'problem' ? '−' : '+'}</span>
+                </button>
+                {activeInfoSection === 'problem' && (
+                  <div className="ts-info-body">
+                    <p>
+                      Climate change is making weather events more extreme and frequent, directly
+                      threatening energy systems communities depend on. Heat waves spike demand beyond
+                      grid capacity. Storms destroy transmission infrastructure. Floods cause electrical
+                      fires and extended outages.
+                    </p>
+                    <p>
+                      Today, energy data is fragmented across agencies and analyzed only after the fact.
+                      Decision-makers lack tools to see crises coming. TerraSafe bridges this gap with
+                      predictive, AI-powered situational awareness.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="ts-panel-card ts-info-section">
+                <button className="ts-info-toggle" onClick={() => toggleInfoSection('equity')}>
+                  <span><Building2 size={14} /> Equity Priorities</span>
+                  <span className="ts-chevron">{activeInfoSection === 'equity' ? '−' : '+'}</span>
+                </button>
+                {activeInfoSection === 'equity' && (
+                  <div className="ts-info-body">
+                    <ul>
+                      <li>Prioritize backup power for hospitals, shelters, and VA facilities</li>
+                      <li>Protect Indigenous communities on remote or aging grids</li>
+                      <li>Ensure cooling centers remain operational during heat waves</li>
+                      <li>Target restoration resources to medically fragile populations first</li>
+                      <li>Reduce energy burden for low-income households</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="ts-panel-card ts-info-section">
+                <button className="ts-info-toggle" onClick={() => toggleInfoSection('faq')}>
+                  <span><HelpCircle size={14} /> FAQ</span>
+                  <span className="ts-chevron">{activeInfoSection === 'faq' ? '−' : '+'}</span>
+                </button>
+                {activeInfoSection === 'faq' && (
+                  <div className="ts-info-body">
+                    <div className="ts-faq-item">
+                      <strong>How does the predictive model work?</strong>
+                      <p>We combine disaster history, grid stress indicators, climate projections, and population dynamics using gradient boosting and spatial clustering to forecast outage risk.</p>
+                    </div>
+                    <div className="ts-faq-item">
+                      <strong>Is this a real-time monitoring tool?</strong>
+                      <p>TerraSafe is a planning and preparedness platform. It uses historical and projected data to identify future risk zones, enabling proactive resilience investments.</p>
+                    </div>
+                    <div className="ts-faq-item">
+                      <strong>Who is this built for?</strong>
+                      <p>Local governments, utility cooperatives, emergency managers, and community organizations seeking to protect critical infrastructure from climate-driven grid failures.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </aside>
+        )}
+
+        {/* Map Container */}
+        <div className="ts-map-container">
           <RealMapView
             geoLevel={geoLevel}
             selectedState={selectedState}
@@ -608,28 +632,21 @@ function AppEnhanced() {
             gpsCoordinates={gpsCoordinates}
             onLocationOptionsChange={setLocationOptions}
           />
-          {isMobile && (
-            <div className="timeline-mobile">
-              <div className="timeline-mobile-label">Timeline to 2035</div>
-              <TimeSlider
-                minDate={new Date(2020, 0, 1)}
-                maxDate={new Date(2035, 11, 31)}
-                currentDate={currentDate}
-                onDateChange={setCurrentDate}
-                stepSize="month"
-                className="time-slider--inline"
-              />
-            </div>
-          )}
+
+          {/* Timeline Slider - Floating at Bottom */}
+          <div className="ts-timeline-float">
+            <div className="ts-timeline-label">Forecast Timeline</div>
+            <TimeSlider
+              minDate={new Date(2020, 0, 1)}
+              maxDate={new Date(2050, 11, 31)}
+              currentDate={currentDate}
+              onDateChange={setCurrentDate}
+              stepSize="month"
+              className="time-slider--inline"
+            />
+          </div>
         </div>
       </div>
-
-      <footer className="app-footer">
-        <p>
-          Built with transparent public data for local leaders and community members |{' '}
-          <a href="/AI-models">View AI Models Report</a>
-        </p>
-      </footer>
         </>
       )}
     </div>
