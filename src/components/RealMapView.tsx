@@ -191,20 +191,18 @@ const RealMapView = ({
     return score / normalizedCandidate.length
   }
 
-  // Get color for choropleth based on value
-  const getColor = (value: number, layerId?: string): string => {
-    if (layerId === 'forecast-pressure') {
-      if (value >= 80) return '#1e3a8a'
-      if (value >= 60) return '#1d4ed8'
-      if (value >= 40) return '#38bdf8'
-      if (value >= 20) return '#bae6fd'
-      return '#e0f2fe'
-    }
-    if (value >= 80) return '#991b1b'
-    if (value >= 60) return '#dc2626'
-    if (value >= 40) return '#f97316'
-    if (value >= 20) return '#93c5fd'
-    return '#1d4ed8'
+  // Risk-based color palette: teal (low) → amber (moderate) → orange (high) → red (critical)
+  const getRiskColor = (value: number): string => {
+    if (value >= 80) return '#dc2626' // critical red
+    if (value >= 65) return '#ea580c' // high orange
+    if (value >= 50) return '#d97706' // elevated amber
+    if (value >= 35) return '#eab308' // moderate yellow
+    if (value >= 20) return '#14b8a6' // watch teal
+    return '#0d9488' // low teal
+  }
+
+  const getColor = (value: number, _layerId?: string): string => {
+    return getRiskColor(value)
   }
 
   const getOverlayOpacity = (county: EnrichedCountyData, baseOpacity: number) => {
@@ -355,7 +353,7 @@ const RealMapView = ({
   const topStressedCounties = showTopStressed
     ? [...counties]
         .sort((a, b) => getForecastScore(b) - getForecastScore(a))
-        .slice(0, 100)
+        .slice(0, 40)
     : []
   const energyReliabilityCounties = showEnergyReliability
     ? counties.filter(county => county.emergencyMetrics.energyStressScore >= 60)
@@ -559,17 +557,18 @@ const RealMapView = ({
           const center = getCountyCentroid(county)
           if (!center) return null
 
-          const opacity = getOverlayOpacity(county, 0.9)
+          const score = getForecastScore(county)
+          const dotColor = getRiskColor(score)
           return (
             <CircleMarker
               key={`stressed-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
-                fillColor: '#b91c1c',
-                color: '#7f1d1d',
-                weight: 2,
-                fillOpacity: opacity
+                fillColor: dotColor,
+                color: dotColor,
+                weight: 1,
+                fillOpacity: 0.85
               }}
             >
               <Popup>
@@ -615,11 +614,11 @@ const RealMapView = ({
             <CircleMarker
               key={`reliability-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
-                fillColor: '#2563eb',
-                color: '#1d4ed8',
-                weight: 2,
+                fillColor: '#3b82f6',
+                color: '#3b82f6',
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -644,11 +643,11 @@ const RealMapView = ({
             <CircleMarker
               key={`recovery-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#f97316',
                 color: '#c2410c',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -673,11 +672,11 @@ const RealMapView = ({
             <CircleMarker
               key={`infrastructure-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#7c3aed',
                 color: '#5b21b6',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -703,11 +702,11 @@ const RealMapView = ({
             <CircleMarker
               key={`forecast-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#1d4ed8',
                 color: '#0f172a',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.85
               }}
             >
@@ -732,11 +731,11 @@ const RealMapView = ({
             <CircleMarker
               key={`pricing-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#0f766e',
                 color: '#115e59',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -760,11 +759,11 @@ const RealMapView = ({
             <CircleMarker
               key={`manufacturing-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#0f172a',
                 color: '#1e293b',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -788,11 +787,11 @@ const RealMapView = ({
             <CircleMarker
               key={`agriculture-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#16a34a',
                 color: '#15803d',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -816,11 +815,11 @@ const RealMapView = ({
             <CircleMarker
               key={`water-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#0284c7',
                 color: '#0369a1',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -844,11 +843,11 @@ const RealMapView = ({
             <CircleMarker
               key={`responders-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#7c3aed',
                 color: '#5b21b6',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.8
               }}
             >
@@ -872,11 +871,11 @@ const RealMapView = ({
             <CircleMarker
               key={`projects-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#facc15',
                 color: '#ca8a04',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.85
               }}
             >
@@ -900,11 +899,11 @@ const RealMapView = ({
             <CircleMarker
               key={`storage-${county.properties.fips}-${idx}`}
               center={center}
-              radius={4}
+              radius={2.5}
               pathOptions={{
                 fillColor: '#22c55e',
                 color: '#15803d',
-                weight: 2,
+                weight: 1,
                 fillOpacity: 0.85
               }}
             >

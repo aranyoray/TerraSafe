@@ -111,20 +111,37 @@
 
 .slider-label {
   font-size: 10px;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 @media (max-width: 768px) {
   .time-slider {
-    min-width: 300px;
-    max-width: 90%;
+    min-width: 280px;
+    max-width: 95%;
   }
 
   .time-display {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .time-slider--inline {
     padding: 8px 10px;
+    min-width: auto;
+    max-width: 100%;
+  }
+
+  .slider::-webkit-slider-thumb {
+    width: 22px;
+    height: 22px;
+    margin-top: -8.5px;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+  }
+
+  .slider {
+    height: 6px;
   }
 }

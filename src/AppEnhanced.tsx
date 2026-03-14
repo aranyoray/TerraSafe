@@ -308,19 +308,12 @@ function AppEnhanced() {
 
   const activeChoroplethLayer = layers.find(layer => layer.enabled && layer.type === 'choropleth')
 
-  const getLegendColor = (value: number, layerId?: string) => {
-    if (layerId === 'forecast-pressure') {
-      if (value >= 80) return '#0e7490'
-      if (value >= 60) return '#06b6d4'
-      if (value >= 40) return '#22d3ee'
-      if (value >= 20) return '#67e8f9'
-      return '#a5f3fc'
-    }
-    if (value >= 80) return '#991b1b'
-    if (value >= 60) return '#dc2626'
-    if (value >= 40) return '#f97316'
-    if (value >= 20) return '#38bdf8'
-    return '#06b6d4'
+  const getLegendColor = (value: number) => {
+    if (value >= 80) return '#dc2626'
+    if (value >= 60) return '#ea580c'
+    if (value >= 40) return '#d97706'
+    if (value >= 20) return '#14b8a6'
+    return '#0d9488'
   }
 
   useEffect(() => {
@@ -442,7 +435,7 @@ function AppEnhanced() {
                   <div className="ts-legend-title">{activeChoroplethLayer.name}</div>
                   <div className="ts-legend-gradient">
                     <div className="ts-legend-bar" style={{
-                      background: `linear-gradient(to right, ${getLegendColor(0, activeChoroplethLayer.id)}, ${getLegendColor(50, activeChoroplethLayer.id)}, ${getLegendColor(100, activeChoroplethLayer.id)})`
+                      background: `linear-gradient(to right, ${getLegendColor(0)}, ${getLegendColor(40)}, ${getLegendColor(70)}, ${getLegendColor(100)})`
                     }} />
                     <div className="ts-legend-labels">
                       <span>Low Risk</span>
