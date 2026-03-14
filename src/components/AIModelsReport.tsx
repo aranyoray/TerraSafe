@@ -149,6 +149,94 @@ const AIModelsReport = () => (
         </div>
       </div>
     </section>
+
+    <section className="ai-models-section">
+      <h2>About TerraSafe</h2>
+      <p>
+        TerraSafe is a predictive resilience platform that helps communities maintain energy
+        reliability before, during, and after climate-driven extreme weather events. It translates
+        complex grid and climate data into concrete, localized preparedness decisions — identifying
+        where the grid will fail before failures happen and generating county-level action plans for
+        grid reinforcement, backup power pre-positioning, and microgrid isolation.
+      </p>
+    </section>
+
+    <section className="ai-models-section">
+      <h2>Problem Statement</h2>
+      <p>
+        Climate change is making weather events more extreme and frequent, directly threatening
+        energy systems communities depend on. Heat waves spike demand beyond grid capacity. Storms
+        destroy transmission infrastructure. Floods cause electrical fires and extended outages.
+        Today, energy data is fragmented across agencies and analyzed only after the fact.
+        Decision-makers lack tools to see crises coming. TerraSafe bridges this gap with predictive,
+        spatially-resolved situational awareness.
+      </p>
+    </section>
+
+    <section className="ai-models-section">
+      <h2>Equity Priorities</h2>
+      <ul>
+        <li>Prioritize backup power for hospitals, shelters, and VA facilities</li>
+        <li>Protect Indigenous communities on remote or aging grids</li>
+        <li>Ensure cooling centers remain operational during heat waves</li>
+        <li>Target restoration resources to medically fragile populations first</li>
+        <li>Reduce energy burden for low-income households</li>
+      </ul>
+    </section>
+
+    <section className="ai-models-section">
+      <h2>Data Sources</h2>
+      <div className="ai-models-footer-grid">
+        <div>
+          <h3>Federal Datasets</h3>
+          <ul>
+            <li>FEMA Disaster Declarations (OpenFEMA API v2)</li>
+            <li>NOAA Storm Events Database</li>
+            <li>U.S. Energy Information Administration (EIA)</li>
+            <li>U.S. Census Bureau Migration & Demographics</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Research Datasets</h3>
+          <ul>
+            <li>DOE Low-Income Energy Affordability Data (LEAD)</li>
+            <li>VIIRS Nighttime Satellite Imagery (NASA/NOAA)</li>
+            <li>NREL ResStock Residential Energy Data</li>
+            <li>EPA eGRID Power Plant Emissions</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section className="ai-models-section">
+      <h2>Frequently Asked Questions</h2>
+      <div className="ai-models-accordion">
+        <details>
+          <summary>How does the predictive model work?</summary>
+          <p>
+            TerraSafe combines disaster history, grid stress indicators, climate projections, and
+            population dynamics using gradient boosting and spatial clustering to forecast outage
+            risk at the county level through 2050.
+          </p>
+        </details>
+        <details>
+          <summary>Is this a real-time monitoring tool?</summary>
+          <p>
+            TerraSafe is a planning and preparedness platform. It uses historical and projected
+            data to identify future risk zones, enabling proactive resilience investments rather
+            than reactive emergency response.
+          </p>
+        </details>
+        <details>
+          <summary>Who is this built for?</summary>
+          <p>
+            Local governments, utility cooperatives, emergency managers, and community
+            organizations seeking to protect critical infrastructure from climate-driven
+            grid failures.
+          </p>
+        </details>
+      </div>
+    </section>
   </div>
 )
 
